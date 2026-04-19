@@ -30,9 +30,9 @@ export const petSchema = z.object({
 export type PetFormData = z.infer<typeof petSchema>
 
 export const petTypeLabels: Record<string, string> = {
-  dog: 'หมา',
-  cat: 'แมว',
-  bird: 'นก',
+  dog: 'หมา 🐕',
+  cat: 'แมว 🐈',
+  bird: 'นก 🐦',
 }
 
 export const genderLabels: Record<string, string> = {
