@@ -1,0 +1,70 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { petSchema } from '@/lib/validations'
+import { z } from 'zod'
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const pet = await prisma.pet.findUnique({
+      where: { id: Number(params.id) },
+    })
+
+    if (!pet) {
+      return NextResponse.json({ error: 'ไม่พบสัตว์เลี้ยง' }, { status: 404 })
+    }
+
+    return NextResponse.json(pet)
+  } catch (error) {
+    console.error('GET pet error:', error)
+    return NextResponse.json({ error: 'ดึงข้อมูลล้มเหลว' }, { status: 500 })
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json()
+
+    const validated = petSchema.parse({
+      ...body,
+      age: Number(body.age),
+    })
+
+    const pet = await prisma.pet.update({
+      where: { id: Number(params.id) },
+      data: validated,
+    })
+
+    return NextResponse.json(pet)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'ข้อมูลไม่ถูกต้อง', details: error.issues },
+        { status: 400 }
+      )
+    }
+    console.error('PUT pet error:', error)
+    return NextResponse.json({ error: 'แก้ไขข้อมูลล้มเหลว' }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await prisma.pet.delete({
+      where: { id: Number(params.id) },
+    })
+
+    return NextResponse.json({ message: 'ลบสัตว์เลี้ยงสำเร็จ' })
+  } catch (error) {
+    console.error('DELETE pet error:', error)
+    return NextResponse.json({ error: 'ลบข้อมูลล้มเหลว' }, { status: 500 })
+  }
+}
