@@ -4,12 +4,13 @@ import { petSchema } from '@/lib/validations'
 import { z } from 'zod'
 
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
     const pet = await prisma.pet.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     })
 
     if (!pet) {
@@ -25,9 +26,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
     const body = await request.json()
 
     const validated = petSchema.parse({
@@ -36,7 +38,7 @@ export async function PUT(
     })
 
     const pet = await prisma.pet.update({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
       data: validated,
     })
 
@@ -54,12 +56,13 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params
     await prisma.pet.delete({
-      where: { id: Number(params.id) },
+      where: { id: Number(id) },
     })
 
     return NextResponse.json({ message: 'ลบสัตว์เลี้ยงสำเร็จ' })
